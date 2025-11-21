@@ -6,6 +6,7 @@ import code.blurone.cowardless.SilentPlayerJoinListener
 import code.blurone.cowardless.SilentPlayerKickListener
 import code.blurone.cowardless.SilentPlayerQuitListener
 import com.mojang.authlib.GameProfile
+import java.io.File
 import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.network.chat.Component
 import net.minecraft.network.protocol.configuration.ServerboundFinishConfigurationPacket
@@ -54,7 +55,8 @@ class ServerNpc(
             val oldPjeListeners = pjeHandlerList.registeredListeners
             for (listener in oldPjeListeners) pjeHandlerList.unregister(listener)
 
-            val pjeSilencer = SilentPlayerJoinListener(oldPjeListeners, plugin.config.getBoolean("chat_message", true))
+            val messagesFile = File(plugin.dataFolder, "messages.yml")
+            val pjeSilencer = SilentPlayerJoinListener(oldPjeListeners, plugin.config.getBoolean("chat_message", true), messagesFile)
             plugin.server.pluginManager.registerEvents(pjeSilencer, plugin)
 
             val connection = FakeConnection(serverNPC)

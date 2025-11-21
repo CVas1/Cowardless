@@ -2,6 +2,7 @@ package code.blurone.cowardless
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import net.kyori.adventure.key.Key
+import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.translation.MiniMessageTranslationStore
 import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.Bukkit
@@ -294,7 +295,9 @@ class CowardlessPaper : JavaPlugin(), Listener {
         if ((hurtByTickstamps[event.player.name] ?: return) <= event.player.world.gameTime) return
 
         val commandName = event.message.split(' ').first().removePrefix("/")
-        if (commandName in commandBlacklist)
+        if (commandName in commandBlacklist) {
             event.isCancelled = true
+            event.player.sendMessage(Component.translatable("command_blocked"))
+        }
     }
 }

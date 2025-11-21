@@ -14,6 +14,8 @@ red_warning: false
 # Whether to show a message in the action bar informing the time left in combat
 action_bar_message: true
 # Whether to send a chat message when a player disconnect mid-combat and is replaced by an NPC
+# Note: You can use hex colors in messages.yml with the format: <#RRGGBB> or <color:#RRGGBB>
+# Example: <#FF5555>Red Text</#FF5555> or <gradient:#FF0000:#00FF00>Rainbow Text</gradient>
 chat_message: true
 # Disable spawning NPCs when the player is kicked from the server
 exempt_kicked: true
