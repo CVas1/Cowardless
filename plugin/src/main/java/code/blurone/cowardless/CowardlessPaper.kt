@@ -34,6 +34,7 @@ class CowardlessPaper : JavaPlugin(), Listener {
     private val resetDespawnThreshold = config.getBoolean("reset_despawn_threshold", true)
     private val redWarning = config.getBoolean("red_warning", false)
     private val pvpOnly = config.getBoolean("pvp_only", false)
+    private val noMobDamageCombat = config.getBoolean("no_mob_damage_combat", false)
     private val twoSided = config.getBoolean("two_sided_pvp", true)
     private val actionBar = config.getBoolean("action_bar", true)
     private val chatMessages = config.getBoolean("chat_message", true)
@@ -145,6 +146,13 @@ class CowardlessPaper : JavaPlugin(), Listener {
             if (resetDespawnThreshold && player.health != 0.0)
                 it.remainingTicks = despawnTicksThreshold
             return
+        }
+
+        // Skip mob damage if no_mob_damage_combat is enabled
+        if (noMobDamageCombat && event is EntityDamageByEntityEvent) {
+            val damager = event.damager
+            // If damager is not a player (i.e., it's a mob), skip combat state
+            if (damager !is Player) return
         }
 
         if (!pvpOnly || player.name in hurtByTickstamps)
