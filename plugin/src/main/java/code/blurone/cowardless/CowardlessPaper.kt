@@ -30,11 +30,13 @@ class CowardlessPaper : JavaPlugin(), Listener {
     private val hurtByTickstamps: MutableMap<String, Long> = mutableMapOf()
     private val shallCancelVelocityEvent: MutableSet<String> = mutableSetOf()
     private val combatTicksThreshold = config.getLong("combat_seconds_threshold", 30) * 20L
+    private val maxCombatTime = config.getLong("max_combat_seconds", 300) * 20L
     private val despawnTicksThreshold = config.getLong("despawn_seconds_threshold", 30) * 20L
     private val resetDespawnThreshold = config.getBoolean("reset_despawn_threshold", true)
     private val redWarning = config.getBoolean("red_warning", false)
     private val pvpOnly = config.getBoolean("pvp_only", false)
     private val noMobDamageCombat = config.getBoolean("no_mob_damage_combat", false)
+    private val noDrowningCombat = config.getBoolean("no_drowning_combat", false)
     private val twoSided = config.getBoolean("two_sided_pvp", true)
     private val actionBar = config.getBoolean("action_bar", true)
     private val chatMessages = config.getBoolean("chat_message", true)
@@ -147,6 +149,9 @@ class CowardlessPaper : JavaPlugin(), Listener {
     }
 
     fun damageHandler(player: Player, cause: DamageCause) {
+        // Skip drowning if config is enabled
+        if (noDrowningCombat && cause == DamageCause.DROWNING) return
+        
         val inTicks = when (cause) {
             // Constant damage
             DamageCause.CONTACT,
@@ -160,7 +165,16 @@ class CowardlessPaper : JavaPlugin(), Listener {
             //DamageCause.CAMPFIRE,
             DamageCause.CRAMMING,
             DamageCause.FREEZE
-                -> if ((hurtByTickstamps[player.name] ?: 0L) > player.world.gameTime + 50L) combatTicksThreshold else 40L
+                -> {
+                    val existingTimestamp = hurtByTickstamps[player.name] ?: 0L
+                    if (existingTimestamp > player.world.gameTime + 50L) {
+                        // Already in combat, extend by normal threshold
+                        combatTicksThreshold
+                    } else {
+                        // New combat or almost expired, use short duration
+                        40L
+                    }
+                }
 
             // Pvp damage
             DamageCause.ENTITY_ATTACK,
@@ -182,13 +196,24 @@ class CowardlessPaper : JavaPlugin(), Listener {
     }
 
     fun setCombatTicks(player: Player, ticks: Long) {
+        val currentGameTime = player.world.gameTime
+        val existingTimestamp = hurtByTickstamps[player.name] ?: currentGameTime
+        val newTimestamp = currentGameTime + ticks
+        
+        // Cap the total combat time to maxCombatTime
+        val maxAllowedTimestamp = currentGameTime + maxCombatTime
+        val finalTimestamp = if (newTimestamp > maxAllowedTimestamp) maxAllowedTimestamp else newTimestamp
+        
         // Set timestamp for cowards
-        hurtByTickstamps[player.name] = player.world.gameTime + ticks
+        hurtByTickstamps[player.name] = finalTimestamp
+        
+        // Calculate actual ticks for warning/actionbar (capped)
+        val actualTicks = finalTimestamp - currentGameTime
 
-        if (redWarning) addRedWarning(player, ticks)
+        if (redWarning) addRedWarning(player, actualTicks)
         if (actionBar) {
             actionBarRunnables.remove(player.name)?.cancel()
-            val runnable = ActionBarRunnable(player, ticks / 20L)
+            val runnable = ActionBarRunnable(player, actualTicks / 20L)
             actionBarRunnables[player.name] = runnable
             if (isFolia)
                 runnable.task = player.scheduler.runAtFixedRate(this, {

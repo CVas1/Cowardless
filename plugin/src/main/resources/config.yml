@@ -3,12 +3,16 @@
 pvp_only: false
 # If set to true, mob damage will not trigger combat state (only player damage counts)
 no_mob_damage_combat: false
+# If set to true, drowning damage will not trigger combat state
+no_drowning_combat: false
 # Also make the attacker enter combat in PvP
 two_sided_pvp: true
 # Time in seconds a player will spawn an NPC if leaving after being hit
-combat_seconds_threshold: 30
+combat_seconds_threshold: 15
+# Maximum time in seconds a player can stay in combat (prevents infinite combat from repeated damage)
+max_combat_seconds: 300
 # Time in seconds before the NPC despawns
-despawn_seconds_threshold: 30
+despawn_seconds_threshold: 15
 # If true, when being damaged, the despawn countdown will start over
 reset_despawn_threshold: true
 # Whether to set the player's vignette red when it would spawn an NPC if disconnecting
@@ -27,4 +31,20 @@ exempt_timed_out: true
 exempt_erroneous_state: false
 # Blacklist commands from being run by the player when in pvp
 command_blacklist:
-  - "trigger"
+  - spawn
+  - tpa
+  - home
+  - rtp
+  - tpahere
+  - afk
+  - warp
+  - warps
+  - land"
+  - lands
+  - warp
+  - arena
+  - kasa
+  - spawn
+  - muzayede
+  - echest
+  - enderchest
