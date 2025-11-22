@@ -51,20 +51,7 @@ class CowardlessPaper : JavaPlugin(), Listener {
             false
         }
     }
-    val factory: CowardFactory = run {
-        val versionStringParts = Bukkit.getMinecraftVersion().split('.')
-        val major = versionStringParts[1].toUInt()
-        val minor = versionStringParts[2].toUInt()
-
-        when (major) {
-            21u if minor == 1u -> code.blurone.cowardless.v1_21_1.ServerNpc
-            21u if minor == 4u -> code.blurone.cowardless.v1_21_4.ServerNpc
-            21u if minor == 5u -> code.blurone.cowardless.v1_21_5.ServerNpc
-            21u if minor in 6u..8u -> code.blurone.cowardless.v1_21_8.ServerNpc
-            21u if minor >= 9u -> code.blurone.cowardless.v1_21_9.ServerNpc
-            else -> throw IllegalArgumentException("${Bukkit.getMinecraftVersion()} is not a supported version")
-        }
-    }
+    val factory: CowardFactory = code.blurone.cowardless.v1_21_4.ServerNpc
 
     override fun onEnable() {
         // Plugin startup logic
@@ -298,9 +285,56 @@ class CowardlessPaper : JavaPlugin(), Listener {
         }
     }
 
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    fun onTeleport(event: PlayerTeleportEvent) {
+        val fromWorld = event.from.world
+        val toWorld = event.to?.world ?: return
+        
+        // Only handle cross-world teleports
+        if (fromWorld.uid == toWorld.uid) return
+        
+        val hurtByTickstamp = hurtByTickstamps[event.player.name] ?: return
+        
+        // Calculate remaining combat time based on the old world's game time
+        val remainingTicks = hurtByTickstamp - fromWorld.gameTime
+        
+        // If combat should have ended, remove it
+        if (remainingTicks <= 0) {
+            hurtByTickstamps.remove(event.player.name)
+            redUnwarnScheduledTasks.remove(event.player.name)?.cancel()
+            redUnwarnRunnables.remove(event.player.name)?.run()
+            actionBarRunnables.remove(event.player.name)?.cancel()
+        } else {
+            // Schedule the combat timer update for after teleport completes
+            event.player.scheduler.run(this, {
+                if (event.player.isOnline) {
+                    setCombatTicks(event.player, remainingTicks)
+                }
+            }, null)
+        }
+    }
+
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onPlayerCommandPreprocessEvent(event: PlayerCommandPreprocessEvent) {
-        if ((hurtByTickstamps[event.player.name] ?: return) <= event.player.world.gameTime) return
+        val hurtByTickstamp = hurtByTickstamps[event.player.name] ?: return
+        val currentGameTime = event.player.world.gameTime
+        
+        // Check if timestamp is way off (indicating cross-world timestamp issue)
+        // If timestamp is more than 24 hours worth of ticks ahead, it's from another world
+        val maxReasonableTimestamp = currentGameTime + (20L * 60 * 60 * 24) // 24 hours in ticks
+        
+        if (hurtByTickstamp > maxReasonableTimestamp) {
+            // Timestamp is from another world with much higher gameTime
+            // Clear combat state since we can't determine remaining time
+            hurtByTickstamps.remove(event.player.name)
+            redUnwarnScheduledTasks.remove(event.player.name)?.cancel()
+            redUnwarnRunnables.remove(event.player.name)?.run()
+            actionBarRunnables.remove(event.player.name)?.cancel()
+            return
+        }
+        
+        // Normal combat check
+        if (hurtByTickstamp <= currentGameTime) return
 
         val commandName = event.message.split(' ').first().removePrefix("/")
         if (commandName in commandBlacklist) {
