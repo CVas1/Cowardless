@@ -28,11 +28,7 @@ allprojects {
 dependencies {
     implementation(project(":core"))
     implementation(project(":plugin"))
-    implementation(project(":1.21.1"))
     implementation(project(":1.21.4"))
-    implementation(project(":1.21.5"))
-    implementation(project(":1.21.8"))
-    implementation(project(":1.21.9"))
     shadow(kotlin("stdlib", "2.2.20"))
     //paperweight.paperDevBundle("1.21.4-R0.1-SNAPSHOT")
     //compileOnly("dev.folia:folia-api:1.20.4-R0.1-SNAPSHOT")

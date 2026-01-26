@@ -1,0 +1,25 @@
+# These messages use MiniMessage for formatting.
+# You can live preview them at https://webui.advntr.dev/
+# Hex color format: <#RRGGBB>text</#RRGGBB> or <color:#RRGGBB>text</color>
+# Gradients: <gradient:#FF0000:#00FF00>Rainbow Text</gradient>
+# Player name placeholder: <p> (will be replaced with player name)
+en:
+  actionbar_seconds: "In combat for <s> seconds"
+  actionbar_end: "You're no longer in combat"
+  chat_coward: "<p> is a COWARD"
+  command_blocked: "<red>You cannot use this command while in combat!"
+es:
+  actionbar_seconds: "En combate por <s> segundos"
+  actionbar_end: "Ya no estás en combate"
+  chat_coward: "<p> es COBARDE"
+  command_blocked: "<red>¡No puedes usar este comando mientras estás en combate!"
+pt:
+  actionbar_seconds: "Em combate por <s> segundos"
+  actionbar_end: "Você já não está mais em combate"
+  chat_coward: "<p> é COVARDE"
+  command_blocked: "<red>Você não pode usar este comando enquanto está em combate!"
+tr:
+  actionbar_seconds: "Savaş halindesin. <s> saniye!"
+  actionbar_end: "Artık savaşta değilsin."
+  chat_coward: "<p> bir KORKAK"
+  command_blocked: "<red>Savaş halindeyken bu komutu kullanamazsınız!"
