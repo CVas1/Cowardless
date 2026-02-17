@@ -40,6 +40,7 @@ class CowardlessPaper : JavaPlugin(), Listener {
     private var pvpOnly: Boolean = false
     private var noMobDamageCombat: Boolean = false
     private var noEnderPearlCombat: Boolean = false
+    private val enderPearlCombatWorlds: MutableSet<String> = mutableSetOf()
     private var twoSided: Boolean = true
     private var actionBar: Boolean = true
     private var chatMessages: Boolean = true
@@ -67,6 +68,11 @@ class CowardlessPaper : JavaPlugin(), Listener {
         pvpOnly = config.getBoolean("pvp_only", false)
         noMobDamageCombat = config.getBoolean("no_mob_damage_combat", false)
         noEnderPearlCombat = config.getBoolean("no_ender_pearl_combat", true)
+        enderPearlCombatWorlds.clear()
+        enderPearlCombatWorlds.addAll(
+            config.getStringList("ender_pearl_combat_worlds")
+                .map { it.lowercase() }
+        )
         twoSided = config.getBoolean("two_sided_pvp", true)
         actionBar = config.getBoolean("action_bar", true)
         chatMessages = config.getBoolean("chat_message", true)
@@ -175,10 +181,14 @@ class CowardlessPaper : JavaPlugin(), Listener {
         // Skip mob damage if no_mob_damage_combat is enabled
         if (event is EntityDamageByEntityEvent) {
             val damager = event.damager
-            
-            if (noEnderPearlCombat && (damager is EnderPearl || damager.type == EntityType.ENDER_PEARL)) return
+            val isEnderPearl = damager is EnderPearl || damager.type == EntityType.ENDER_PEARL
 
-            if (noMobDamageCombat) {
+            if (isEnderPearl && noEnderPearlCombat) {
+                val worldName = player.world.name.lowercase()
+                // Only allow ender pearl combat in specific worlds
+                if (worldName !in enderPearlCombatWorlds) return
+                // World is in enderPearlCombatWorlds, skip mob check and allow combat
+            } else if (noMobDamageCombat) {
                 // If damager is not a player (i.e., it's a mob), skip combat state
                 if (damager !is Player) return
             }

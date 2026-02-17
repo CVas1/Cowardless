@@ -5,6 +5,10 @@ pvp_only: false
 no_mob_damage_combat: true
 # If set to true, ender pearl damage will not trigger combat state
 no_ender_pearl_combat: true
+# Worlds where ender pearl damage should trigger combat state.
+# If this list is not empty, only these worlds will allow ender pearl combat (case-insensitive).
+# If this list is empty, behavior falls back to no_ender_pearl_combat.
+ender_pearl_combat_worlds: []
 # Also make the attacker enter combat in PvP
 two_sided_pvp: true
 # Time in seconds a player will spawn an NPC if leaving after being hit
