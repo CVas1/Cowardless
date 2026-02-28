@@ -174,10 +174,6 @@ class CowardlessPaper : JavaPlugin(), Listener {
 
         // Reset timer for NPC
         Coward.byName[event.entity.name]?.let {
-            logger.info(
-                "[Cowardless] onDamage: NPC detected for ${event.entity.name}, " +
-                    "resetDespawnThreshold=$resetDespawnThreshold health=${player.health} -> resetting NPC timer and returning"
-            )
             if (resetDespawnThreshold && player.health != 0.0)
                 it.remainingTicks = despawnTicksThreshold
             return
@@ -200,42 +196,26 @@ class CowardlessPaper : JavaPlugin(), Listener {
             }
             
             val isEnderPearl = damager is EnderPearl || damager.type == EntityType.ENDER_PEARL
-            logger.info(
-                "[Cowardless] EntityDamageByEntityEvent: damager=${damager.type} " +
-                    "isEnderPearl=$isEnderPearl noEnderPearlCombat=$noEnderPearlCombat " +
-                    "noMobDamageCombat=$noMobDamageCombat player=${player.name}"
-            )
+
 
 
             if (isEnderPearl && noEnderPearlCombat) {
                 val worldName = player.world.name.lowercase()
-                logger.info(
-                    "[Cowardless] EntityDamageByEntityEvent: EnderPearl detected. " +
-                        "player=${player.name} world=$worldName allowedWorlds=$enderPearlCombatWorlds " +
-                        "noEnderPearlCombat=$noEnderPearlCombat"
-                )
+
                 // Only allow ender pearl combat in specific worlds
                 if (worldName in enderPearlCombatWorlds) {
-                    logger.info(
-                        "[Cowardless] EnderPearl combat allowed in this world; setting fixed 15s combat for ${player.name}"
-                    )
+
                     // Force a fixed combat timer when ender pearl damage happens in an allowed world
                     setCombatTicks(player, 15L * 20L)
                     return
                 }
 
-                logger.info(
-                    "[Cowardless] EnderPearl combat NOT allowed in this world; skipping combat for ${player.name}"
-                )
                  
             } else 
             if (noMobDamageCombat) {
                 // If damager is not a player (i.e., it's a mob), skip combat state
                 if (damager !is Player) {
-                    logger.info(
-                        "[Cowardless] noMobDamageCombat=true and damager is not Player; " +
-                            "player=${player.name} damagerType=${damager.type} cause=${event.cause} -> skipping combat"
-                    )
+
                     return
                 }
             }
